@@ -1,104 +1,74 @@
-const db = require('../models/todo.index')
-const Todo = db.todos
-//Op нужен для адаптации логики sql-запросов в sequelize 
-const Op = db.Sequelize.Op
+const Todo = require("../models/todos.model")
+const {Router} = require('express')
+const router = Router();
+const ErrorResponse = require('../classes/error-response')
+const { asyncHandler, requireToken } = require("../middleware/middleware")
 
-//Функция, отвечающая за создание todo и добавления в базу данных
-exports.create = (req, res) => {
-    if (!req.body.title) {
-        res.status(400).send({
-            message: "title can not be empty!"
-        })
-        return
+function initRoutes() {
+    router.get('/',  asyncHandler(requireToken), asyncHandler(getToDos))
+    router.get('/:id', asyncHandler(requireToken), asyncHandler(getToDoById))
+    router.post('/',  asyncHandler(requireToken), asyncHandler(createToDo))
+    router.delete('/:id',  asyncHandler(requireToken), asyncHandler(deleteToDoById))
+    router.delete('/',  asyncHandler(requireToken), asyncHandler(deleteToDos))
+    router.patch('/:id', asyncHandler(requireToken), asyncHandler(patchToDo))
+}
+
+async function getToDos(req, res, next) {
+    const todos = await Todo.findAll({ where: { userId: req.userId } })
+    res.status(200).json({ todos })
+  }
+  
+  async function getToDoById(req, res, next) {
+    const todo = await Todo.findOne({
+      where: { id: req.params.id, userId: req.userId },
+    });
+    if (!todo) {
+      throw new ErrorResponse("No todo found", 404);
     }
-
-    const todo = {
+    res.status(200).json(todo)
+  }
+  
+  async function createToDo(req, res, next) {
+    const todo = await Todo.create({
         title: req.body.title,
         description: req.body.description,
-    }
-
-    Todo.create(todo)
-        .then(data => {
-            res.send(data)
-        })
-        .catch(err => {
-            res.status(500).send({ message: err })
-        })
-}
-
-//Функция для получения всех существующих todo
-exports.findAll = (req, res) => {
-    const title = req.query.title;
-    var condition = title ? { title: { [Op.iLike]: `%${title}%` } } : null;
+        userId: req.userId,
+    });
+    res.status(200).json(todo)
+  }
   
-    Todo.findAll({ where: condition })
-      .then(data => {
-        res.send(data);
-      })
-      .catch(err => {
-        res.status(500).send({
-          message:
-            err.message
-        });
-      });
-  };
-
-//Функция для получения конкретного todo по его id
-exports.findOne = (req, res) => {
-    const id = req.params.id
-    Todo.findByPk(id)
-        .then(data => {
-            res.send(data)
-        })
-        .catch(err => {
-            res.status(500).send({ message: err })
-        })
-}
-
-//Функция для изменения уже существующего todo
-exports.update = (req, res) => {
-    const id = req.params.id
-    Todo.update(req.body, {
-        where: { id: id }
+  async function deleteToDos(req, res, next) {
+    await Todo.destroy({ truncate: true }, { where: { userId: req.userId } })
+    res.status(200).json({ message: "All todos was deleted" })
+  }
+  
+  async function deleteToDoById(req, res, next) {
+    const todo = await Todo.findOne({
+      where: { id: req.params.id, userId: req.userId },
     })
-        .then(num => {
-            if (num == 1) {
-                res.send({ message: "success" })
-            }
-            else { res.send({ message: `cant update with id = ${id}` }) }
-        })
-        .catch(err => {
-            res.send({ message: err })
-        })
-}
+    if (!todo) {
+      throw new ErrorResponse("No ToDo found", 404);
+    }
+  
+    await todo.destroy()
+  
+    res.status(200).json({ message: "todo was deleted" });
+  }
+  
+  async function patchToDo(req, res, next) {
+    let todo = await Todo.findOne({
+      where: { id: req.params.id, userId: req.userId },
+    });
+  
+    if (!todo) {
+      throw new ErrorResponse("No ToDo found", 404)
+    }
+  
+    await todo.update(req.body)
+    todo = await Todo.findByPk(req.params.id) // возвращается старая
+    res.status(200).json(todo)
+  }
 
-//Функция для удаления всех todo из таблицы
-exports.deleteAll = (req, res) => {
-    Todo.destroy({
-        where: {},
-        truncate: false
-    })
-        .then(nums => {
-            res.send({ message: `${nums} success` })
-        })
-        .catch(err => {
-            res.send({ message: err })
-        })
-}
+  initRoutes()
 
-//Функция для удаления конкретного todo по его id
-exports.deleteOne = (req, res) => {
-    const id = req.params.id
-    Todo.destroy({ where: { id: id } })
-        .then(num => {
-            if (num == 1) {
-                res.send({ message: "success" })
-            }
-            else {
-                res.send({ message: `cant delete with id = ${id}` })
-            }
-        })
-        .catch(err => {
-            res.send({ message: err })
-        })
-}
+  module.exports = router
