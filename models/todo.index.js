@@ -17,12 +17,20 @@ const sequelize = new Sequelize(dbConfig.DB, dbConfig.USER, dbConfig.PASSWORD, {
 })
 
 //Объект базы данных, который содержит в себе все нужные параметры и модели данных
-const db = {}
-
-db.Sequelize = Sequelize
-db.sequelize = sequelize
-
-db.todos = require('./todos.model.js')(sequelize, Sequelize)
-
-module.exports = db
-
+const initDB = async () => {
+    try {
+      await sequelize.authenticate()
+      await sequelize.dropSchema('public', {})
+      await sequelize.createSchema('public', {})
+      await sequelize.sync()
+      console.log('Sequelize was initialized')
+    } catch (error) {
+      console.log(error)
+      process.exit()
+    }
+  };
+  
+  module.exports = {
+    sequelize,
+    initDB,
+  };
