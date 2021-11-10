@@ -1,14 +1,36 @@
-//модель в sequelize, преобразовываемая в таблицу в базе данных
-module.exports = (sequelize, Sequelize) => {
-    const Todo = sequelize.define("todo", {
-        title:{
-            type: Sequelize.STRING
-        },
-        description:{
-            type: Sequelize.STRING
-        }
-    })
+const Sequelize = require("sequelize")
+const { sequelize } = require("./todo.index")
+class ToDo extends Sequelize.Model {}
 
-    return Todo
-}
+ToDo.init(
+  {
+    id: {
+      type: Sequelize.DataTypes.UUID,
+      primaryKey: true,
+      defaultValue: Sequelize.DataTypes.UUIDV4,
+    },
+    title: {
+      type: Sequelize.STRING,
+      defaultValue: "Title",
+    },
+    description: {
+      type: Sequelize.STRING,
+      defaultValue: "",
+    },
+    isCompleted: {
+      type: Sequelize.BOOLEAN,
+      defaultValue: false,
+    },
+    isFavourite: {
+      type: Sequelize.BOOLEAN,
+      defaultValue: false,
+    },
+    priority: {
+      type: Sequelize.SMALLINT,
+      defaultValue: 0,
+    },
+  },
+  { sequelize: sequelize, underscored: true, modelName: "todo" }
+)
 
+module.exports = ToDo
