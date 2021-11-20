@@ -3,14 +3,13 @@ const app = express()
 const apiAuthRouter = require('./controllers/auth.controller')
 const apiTodoRouter = require('./controllers/todo.controller')
 const apiUserRouter = require('./controllers/user.controller')
-app.use(express.json())
-app.use(express.urlencoded({ extended: true }))
-const { notFound, errorHandler, asyncHandler } = require('./middleware/middleware')
-const { initDB } = require('./models/todo.index.js')
+const {errorHandler} = require('./middleware/middleware')
+const { initDB } = require('./models/index.js')
 
 initDB()
 
-
+app.use(express.json())
+app.use(express.urlencoded({ extended: true }))
 
 app.use((req, res, next) => {
   console.log('URL = ', req.url)

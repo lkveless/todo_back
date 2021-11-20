@@ -1,5 +1,5 @@
 const ErrorResponse = require("../classes/error-response.js")
-const Token = require("../models/token.model.js")
+const Token = require("../models/dbModels/token.model.js")
 
 const asyncHandler = (fn) => (req, res, next) => {
     Promise.resolve(fn(req, res, next)).catch(next)
@@ -15,21 +15,21 @@ const syncHandler = (fn) => (req, res, next) => {
 
 
 const requireToken = async (req, res, next) => {
-  const token = req.header("x-access-token")
-  if (!token) {
-      throw new ErrorResponse("Token wast sent ", 404);
-  }
+    const token = req.header("x-access-token")
+    if (!token) {
+        throw new ErrorResponse("Token wast sent ", 400);
+    }
 
-  const dbToken = await Token.findOne({
-      where: { value: token },
-  });
+    const dbToken = await Token.findOne({
+        where: { value: token },
+    });
 
-  if (!dbToken) {
-      throw new ErrorResponse("Incorrect token", 404)
-  }
-  req.userId = dbToken.userId
+    if (!dbToken) {
+        throw new ErrorResponse("Incorrect token", 401)
+    }
+    req.userId = dbToken.userId
 
-  next()
+    next()
 }
 
 const errorHandler = (err, _req, res, _next) => {
