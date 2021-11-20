@@ -1,6 +1,7 @@
 const Sequelize = require("sequelize")
-const { sequelize } = require("./todo.index")
-class Token extends Sequelize.Model {}
+const { sequelize } = require("../index")
+
+class Token extends Sequelize.Model { }
 
 Token.init(
   {
@@ -10,8 +11,7 @@ Token.init(
       defaultValue: Sequelize.DataTypes.UUIDV4,
     },
     value: {
-      type: Sequelize.STRING,
-      defaultValue:''
+      type: Sequelize.STRING
     },
   },
 

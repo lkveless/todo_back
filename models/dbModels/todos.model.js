@@ -1,6 +1,7 @@
 const Sequelize = require("sequelize")
-const { sequelize } = require("./todo.index")
-class ToDo extends Sequelize.Model {}
+const { sequelize } = require("../index")
+
+class ToDo extends Sequelize.Model { }
 
 ToDo.init(
   {
@@ -11,7 +12,7 @@ ToDo.init(
     },
     title: {
       type: Sequelize.STRING,
-      defaultValue: "Title",
+      defaultValue: "",
     },
     description: {
       type: Sequelize.STRING,

@@ -1,6 +1,9 @@
 const Sequelize = require("sequelize")
-const { sequelize } = require("./todo.index")
-class User extends Sequelize.Model {}
+const { sequelize } = require("../index")
+const Todo = require("./todos.model")
+const Token = require("./token.model")
+
+class User extends Sequelize.Model { }
 
 User.init(
   {
@@ -29,9 +32,6 @@ User.init(
 
   { sequelize: sequelize, underscored: true, modelName: "user" }
 );
-
-const Todo = require("./todos.model")
-const Token = require("./token.model")
 
 User.hasMany(Todo)
 User.hasMany(Token)
