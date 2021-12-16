@@ -3,13 +3,14 @@ const ErrorResponse = require('../classes/error-response')
 const Token = require("../models/dbModels/token.model")
 const User = require("../models/dbModels/user.model")
 const { Op } = require("sequelize")
-const { asyncHandler} = require("../middleware/middleware")
+const { asyncHandler, requireToken} = require("../middleware/middleware")
 const router = Router()
 const { nanoid } = require('nanoid')
 
 function initRoutes() {
   router.post('/registration', asyncHandler(registration))
   router.post('/login', asyncHandler(login))
+  router.get('/check', asyncHandler(requireToken), asyncHandler(check))
 }
 
 async function registration(req, res, next) {
@@ -57,9 +58,22 @@ async function login(req, res, next) {
 
   res.status(200).json({
     accessToken: newToken.value,
+    userID: newToken.userId
   })
 }
 
+async function check(req,res,next) {
+  const userInfo = await User.findByPk(req.userId)
+  const newToken = await Token.create({
+    userId: userInfo.id,
+    value: nanoid(128),
+  })
+
+  res.status(200).json({
+    accessToken: newToken.value,
+    userID: newToken.userId
+  })
+}
 initRoutes()
 
 module.exports = router;
