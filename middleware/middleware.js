@@ -15,7 +15,7 @@ const syncHandler = (fn) => (req, res, next) => {
 
 
 const requireToken = async (req, res, next) => {
-    const token = req.header("x-access-token")
+    const token = req.header("token")
     if (!token) {
         throw new ErrorResponse("Token wast sent ", 400);
     }

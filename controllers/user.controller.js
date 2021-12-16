@@ -28,7 +28,7 @@ async function updateUser(req, res, next) {
 async function logoutUser(req, res, next) {
   await Token.destroy({
     where: {
-      value: req.header("x-access-token"),
+      value: req.header("token"),
     },
   });
   
