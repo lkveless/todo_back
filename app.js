@@ -5,11 +5,17 @@ const apiTodoRouter = require('./controllers/todo.controller')
 const apiUserRouter = require('./controllers/user.controller')
 const {errorHandler} = require('./middleware/middleware')
 const { initDB } = require('./models/index.js')
+const cors = require("cors")
 
 initDB()
 
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
+
+var corsOptions = {
+  origin: "http://localhost:3000"
+}
+app.use(cors(corsOptions));
 
 app.use((req, res, next) => {
   console.log('URL = ', req.url)
